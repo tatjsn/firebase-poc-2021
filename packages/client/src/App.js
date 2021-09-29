@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, onSnapshot, updateDoc, increment } from 'firebase/firestore';
+import {
+  collection, getDocs, doc, onSnapshot, updateDoc, increment,
+  query, orderBy, startAfter, limit,
+} from 'firebase/firestore';
 
 const plusOne = increment(1);
 
@@ -10,9 +13,9 @@ function App({ db }) {
 
   useEffect(() => {
     async function fetchData() {
-      const col = collection(db, 'eirei');
-      const docsSnapshot = await getDocs(col);
-      setItems(docsSnapshot.docs);
+      const q = query(collection(db, 'eirei'), orderBy('name'), limit(10));
+      const snapshots = await getDocs(q);
+      setItems(snapshots.docs);
     }
     fetchData();
   }, [db]);
@@ -33,14 +36,30 @@ function App({ db }) {
   }
 
   if (!id) {
+    const addMoreItems = async () => {
+      const q = query(
+        collection(db, 'eirei'),
+        orderBy('name'),
+        startAfter(items[items.length - 1]),
+        limit(10)
+      );
+      const snapshots = await getDocs(q);
+      setItems([ ...items, ...snapshots.docs ]);
+    };
+
     return (
-      <ul>
-        { items.map(item => (
-          <li key={item.id}>
-            <button onClick={() => setId(item.id)}>{item.data().name}</button>
-          </li>
-        )) }
-      </ul>
+      <div>
+        <ul>
+          { items.map(item => (
+            <li key={item.id}>
+              <button onClick={() => setId(item.id)}>{item.data().name}</button>
+            </li>
+          )) }
+        </ul>
+        <p>
+          <button onClick={addMoreItems}>More</button>
+        </p>
+      </div>
     );
   }
 
