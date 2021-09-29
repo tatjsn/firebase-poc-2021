@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, onSnapshot, updateDoc, increment } from 'firebase/firestore';
+
+const plusOne = increment(1);
 
 function App({ db }) {
   const [items, setItems] = useState(null);
@@ -43,7 +45,7 @@ function App({ db }) {
   }
 
   const item = items.find(i => i.id === id);
-  const addLike = () => updateDoc(doc(db, 'like', id), { like: like + 1 });
+  const addLike = () => updateDoc(doc(db, 'like', id), { like: plusOne });
 
   return (
     <div>
